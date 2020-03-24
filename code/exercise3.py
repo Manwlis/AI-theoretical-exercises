@@ -12,7 +12,7 @@ class state():
         self.boat_side = boat_side
         self.action = action # String pou deixnei ti egine se auto to state. Den kserw kata poso xreiazetai. Isws einai reduntand kai na mporei na ftiaxtei kata to print apo to boat side kai ta noumera self kai patera
         self.parent = parent
-        self.children = list()
+        self.children = list() # isws den xreiazetai na einai edw kai na einai temp sth dfs
 
     # true otan lu8hke to problhma
     def is_goal_state(self):
@@ -46,13 +46,11 @@ def is_valid_state( cannibals_left , missionaries_left , cannibals_right , missi
     if missionaries_right < cannibals_right and missionaries_right != 0:
         return False
 
-    # isws na mhn prepei na afisw ena state na einai idio me to patera tou patera tou ------------------------------
-
     return True
 
 
 # Elenxei oles tis kiniseis an einai egkures. Gia opoies einai ftiaxnei neo state.
-# pi8anes kiniseis: 
+# pi8anes kiniseis:
 # ierapostoloi , kanibaloi , kateu8unsh
 #       2      ,     0     ,     ->
 #       1      ,     0     ,     ->
@@ -65,7 +63,9 @@ def is_valid_state( cannibals_left , missionaries_left , cannibals_right , missi
 #       0      ,     1     ,     <-
 #       0      ,     2     ,     <-
 def create_children( parent ):
-    
+
+    parent.children = list()
+
     # h barka einai sta aristera
     if parent.boat_side == "left":
         # 2 ierapostoloi pros ta deksia
@@ -86,7 +86,7 @@ def create_children( parent ):
             parent.children.append(child)
         # 2  kanibalooi pros ta deksia
         if is_valid_state( parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right ):
-            child = state( parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right , "right" , "1 cannibals to right" , parent )
+            child = state( parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right , "right" , "1 cannibal to right" , parent )
             parent.children.append(child)
 
     # h barka einai sta deksia
@@ -109,35 +109,82 @@ def create_children( parent ):
             parent.children.append(child)
         # 2  kanibaloi pros ta deksia
         if is_valid_state( parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right ):
-            child = state( parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right , "left" , "1 cannibals to left" , parent )
+            child = state( parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right , "left" , "1 cannibal to left" , parent )
             parent.children.append(child)
 
 
-# mallon idfs
-# 8a ftiaxnei paidia mesw ths create children kai meta 8a ta psaxnei
-def search_algorithm( problem ):
-    return False
+# iterative deepeining depth first search
+def id_dfs( root ):
+    import itertools
+
+    # ftiaxnei paidia mesw ths create children kai meta 8a ta psaxnei
+    def dfs( node , depth_remaining ):
+        # eftase sto orio ba8ous
+        if depth_remaining == 0:
+            return None
+        # brhke stoxo
+        elif node.is_goal_state():
+            return node
+
+        # ftiaxnei paidia
+        create_children( node )
+
+        # stelnei ta paidia gia psaksimo anadromika
+        for child in node.children:
+            result = dfs(child, depth_remaining - 1)
+            # paidi tou eftase se stoxo
+            if result:
+                return result
+        # ola ta paidia ftasan se adieksodo h pato
+        return None
+
+    # infinite counter
+    for depth in itertools.count():
+        route = dfs( root , depth )
+        if route:
+            return route
 
 
-# prepei na ta ektupwsei afou exei bre8ei ena oloklhro monopati. Mporei na dimiourgh8oun branches pou den ftanoun sto goal. Oi katastaseis tou den prepei na ektupw8oun
-def print_solution( problem ):
-    return False
+# prepei na ta ektupwsei afou exei bre8ei ena oloklhro monopati. Mporei na dimiourgh8oun branches pou den ftanoun sto goal. Oi katastaseis tous den prepei na ektupw8oun
+def print_solution( solution ):
+
+    path = list()
+
+    # kataskeuh monopatiou
+    while solution:
+        path.append(solution)
+        solution = solution.parent
+
+    print("")
+    # ektupwsh kinisewn. Sto initial state den exei geinei kamia kinhsh
+    for i in range( 1 , len(path) ):
+        # exoun mpei sth lista apo goal pros arxh. Prepei na bgoun anapoda gia na emfanistoun swsta
+        state = path[ len(path) - i - 1 ]
+        print( f"action {i:>2}: {state.action}" )
+
+    print("")
+    # ektupwsh katastasewn
+    for i in range( 0 , len(path) ):
+        state = path[ len(path) - i - 1 ]
+        if i == 0:
+            print( f"init state: {NUM_CANNIBALS}C {NUM_MISSIONARIES}M left  0C 0M" )
+        elif i != len(path) - 1:
+            print( f" state  {i:>2}: {state.cannibals_left}C {state.missionaries_left}M {state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
+        else:
+            print( f" end state: {state.cannibals_left}C {state.missionaries_left}M {state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
 
 
 def main():
     # create initial state
-    problem = state( NUM_CANNIBALS , NUM_MISSIONARIES , 0 , 0 , "left" , "no action" , None )
-    create_children( problem )
-
-    print( problem.children )
+    problem = state( NUM_CANNIBALS , NUM_MISSIONARIES , 0 , 0 , "left" , "" , None )
 
     # find solution
-    search_algorithm( problem )
+    solution = id_dfs( problem )
 
     # print solution
-    print_solution( problem )
-    
+    print_solution( solution )
 
-# # na koitaksw an xreiazetai na meinei
+
+# run from terminal
 if __name__ == "__main__":
     main()
