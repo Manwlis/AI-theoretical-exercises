@@ -10,9 +10,9 @@ class state():
         self.cannibals_right = cannibals_right
         self.missionaries_right = missionaries_right
         self.boat_side = boat_side
-        self.action = action # String pou deixnei ti egine se auto to state. Den kserw kata poso xreiazetai. Isws einai reduntand kai na mporei na ftiaxtei kata to print apo to boat side kai ta noumera self kai patera
+        self.action = action # String pou deixnei ti egine gia na ftasei se auto to state.
         self.parent = parent
-        self.children = list() # isws den xreiazetai na einai edw kai na einai temp sth dfs
+        self.children = list()
 
     # true otan lu8hke to problhma
     def is_goal_state(self):
@@ -21,9 +21,9 @@ class state():
 
 # isws kapioi elegxoi einai reduntant
 # elenxei an ena state einai egkuro
-def is_valid_state( cannibals_left , missionaries_left , cannibals_right , missionaries_right ):
+def is_valid_action( previous_state , cannibals_left , missionaries_left , cannibals_right , missionaries_right ):
 
-    #den prepei na iparxei arnhtikos ari8mos an8rwpwn h na kseperasoun ta arxika oria 
+    #den prepei na iparxei arnhtikos ari8mos an8rwpwn h na kseperastoun ta arxika oria 
     if cannibals_left < 0 or cannibals_left > NUM_CANNIBALS:
         return False
     if missionaries_left < 0 or missionaries_left > NUM_MISSIONARIES:
@@ -46,10 +46,16 @@ def is_valid_state( cannibals_left , missionaries_left , cannibals_right , missi
     if missionaries_right < cannibals_right and missionaries_right != 0:
         return False
 
+    # paei na epistrepsei sthn prohgoymenh katastash
+    if previous_state != None:
+        if ( cannibals_left == previous_state.cannibals_left and cannibals_right == previous_state.cannibals_right and
+         missionaries_right == previous_state.missionaries_right and missionaries_left == previous_state.missionaries_left ):
+            return False
+
     return True
 
 
-# Elenxei oles tis kiniseis an einai egkures. Gia opoies einai ftiaxnei neo state.
+# Elenxei oles tis kiniseis an einai egkures. Gia opoies einai ftiaxnei neo state. Mporoun na dhmiourgh8oun parapanw apo 1 paidia ka8e fora.
 # pi8anes kiniseis:
 # ierapostoloi , kanibaloi , kateu8unsh
 #       2      ,     0     ,     ->
@@ -69,46 +75,49 @@ def create_children( parent ):
     # h barka einai sta aristera
     if parent.boat_side == "left":
         # 2 ierapostoloi pros ta deksia
-        if is_valid_state( parent.cannibals_left , parent.missionaries_left - 2 , parent.cannibals_right , parent.missionaries_right + 2 ):
+        # elenxos egkurhs kinishs
+        if is_valid_action( parent.parent , parent.cannibals_left , parent.missionaries_left - 2 , parent.cannibals_right , parent.missionaries_right + 2 ):
+            # h kinhsh einai egkurh kai dhmiourgeitai mia katastash
             child = state( parent.cannibals_left , parent.missionaries_left - 2 , parent.cannibals_right , parent.missionaries_right + 2, "right" , "2 missionaries to right" , parent )
+            # sundeetai o neos kombos me ton patera tou
             parent.children.append(child)
         # 1 ierapostolos pros ta deksia
-        if is_valid_state( parent.cannibals_left , parent.missionaries_left - 1 , parent.cannibals_right , parent.missionaries_right + 1 ):
+        if is_valid_action( parent.parent , parent.cannibals_left , parent.missionaries_left - 1 , parent.cannibals_right , parent.missionaries_right + 1 ):
             child = state( parent.cannibals_left , parent.missionaries_left - 1 , parent.cannibals_right , parent.missionaries_right + 1, "right" , "1 missionary to right" , parent )
             parent.children.append(child)
         # 1 ierapostolos kai enas kanibalos pros ta deksia
-        if is_valid_state( parent.cannibals_left - 1 , parent.missionaries_left - 1 , parent.cannibals_right + 1 , parent.missionaries_right + 1 ):
+        if is_valid_action( parent.parent , parent.cannibals_left - 1 , parent.missionaries_left - 1 , parent.cannibals_right + 1 , parent.missionaries_right + 1 ):
             child = state( parent.cannibals_left - 1 , parent.missionaries_left - 1 , parent.cannibals_right + 1 , parent.missionaries_right + 1, "right" , "1 missionary and 1 cannibal to right" , parent )
             parent.children.append(child)
         # 1  kanibalos pros ta deksia
-        if is_valid_state( parent.cannibals_left - 1 , parent.missionaries_left , parent.cannibals_right + 1 , parent.missionaries_right ):
+        if is_valid_action( parent.parent , parent.cannibals_left - 1 , parent.missionaries_left , parent.cannibals_right + 1 , parent.missionaries_right ):
             child = state( parent.cannibals_left - 1 , parent.missionaries_left , parent.cannibals_right + 1 , parent.missionaries_right , "right" , "1 cannibal to right" , parent )
             parent.children.append(child)
         # 2  kanibalooi pros ta deksia
-        if is_valid_state( parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right ):
+        if is_valid_action( parent.parent , parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right ):
             child = state( parent.cannibals_left - 2 , parent.missionaries_left , parent.cannibals_right + 2 , parent.missionaries_right , "right" , "1 cannibal to right" , parent )
             parent.children.append(child)
 
     # h barka einai sta deksia
     if parent.boat_side == "right":
         # 2 ierapostoloi pros ta deksia
-        if is_valid_state( parent.cannibals_left , parent.missionaries_left + 2 , parent.cannibals_right , parent.missionaries_right - 2 ):
+        if is_valid_action( parent.parent , parent.cannibals_left , parent.missionaries_left + 2 , parent.cannibals_right , parent.missionaries_right - 2 ):
             child = state( parent.cannibals_left , parent.missionaries_left + 2 , parent.cannibals_right , parent.missionaries_right - 2 , "left" , "2 missionaries to left" , parent )
             parent.children.append(child)
         # 1 ierapostolos pros ta deksia
-        if is_valid_state( parent.cannibals_left , parent.missionaries_left + 1 , parent.cannibals_right , parent.missionaries_right - 1 ):
+        if is_valid_action( parent.parent , parent.cannibals_left , parent.missionaries_left + 1 , parent.cannibals_right , parent.missionaries_right - 1 ):
             child = state( parent.cannibals_left , parent.missionaries_left + 1 , parent.cannibals_right , parent.missionaries_right - 1 , "left" , "1 missionary to left" , parent )
             parent.children.append(child)
         # 1 ierapostolos kai enas kanibalos pros ta deksia
-        if is_valid_state( parent.cannibals_left + 1 , parent.missionaries_left + 1 , parent.cannibals_right - 1 , parent.missionaries_right - 1 ):
+        if is_valid_action( parent.parent , parent.cannibals_left + 1 , parent.missionaries_left + 1 , parent.cannibals_right - 1 , parent.missionaries_right - 1 ):
             child = state( parent.cannibals_left + 1 , parent.missionaries_left + 1 , parent.cannibals_right - 1 , parent.missionaries_right - 1 , "left" , "1 missionary and 1 cannibal to left" , parent )
             parent.children.append(child)
         # 1  kanibalos pros ta deksia
-        if is_valid_state( parent.cannibals_left + 1 , parent.missionaries_left , parent.cannibals_right - 1 , parent.missionaries_right ):
+        if is_valid_action( parent.parent , parent.cannibals_left + 1 , parent.missionaries_left , parent.cannibals_right - 1 , parent.missionaries_right ):
             child = state( parent.cannibals_left + 1 , parent.missionaries_left , parent.cannibals_right - 1 , parent.missionaries_right , "left" , "1 cannibal to left" , parent )
             parent.children.append(child)
         # 2  kanibaloi pros ta deksia
-        if is_valid_state( parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right ):
+        if is_valid_action( parent.parent , parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right ):
             child = state( parent.cannibals_left + 2 , parent.missionaries_left , parent.cannibals_right - 2 , parent.missionaries_right , "left" , "1 cannibal to left" , parent )
             parent.children.append(child)
 
@@ -166,12 +175,12 @@ def print_solution( solution ):
     # ektupwsh katastasewn
     for i in range( 0 , len(path) ):
         state = path[ len(path) - i - 1 ]
-        if i == 0:
-            print( f"init state: {NUM_CANNIBALS}C {NUM_MISSIONARIES}M left  0C 0M" )
+        if i == 0: # arxikh katastash
+            print( f"init state: {NUM_CANNIBALS}C {NUM_MISSIONARIES}M boat_left  0C 0M" )
         elif i != len(path) - 1:
-            print( f" state  {i:>2}: {state.cannibals_left}C {state.missionaries_left}M {state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
-        else:
-            print( f" end state: {state.cannibals_left}C {state.missionaries_left}M {state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
+            print( f" state  {i:>2}: {state.cannibals_left}C {state.missionaries_left}M boat_{state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
+        else: # telikh katastash
+            print( f" end state: {state.cannibals_left}C {state.missionaries_left}M boat_{state.boat_side:<5} {state.cannibals_right}C {state.missionaries_right}M" )
 
 
 def main():
