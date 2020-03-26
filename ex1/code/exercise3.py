@@ -19,7 +19,6 @@ class state():
         return ( self.cannibals_right == NUM_CANNIBALS and self.missionaries_right == NUM_MISSIONARIES )
 
 
-# isws kapioi elegxoi einai reduntant
 # elenxei an ena state einai egkuro
 def is_valid_action( previous_state , cannibals_left , missionaries_left , cannibals_right , missionaries_right ):
 
