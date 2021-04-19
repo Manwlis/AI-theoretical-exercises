@@ -1,4 +1,4 @@
-# PLH417-theoretical-exercises
+# AI-theoretical-exercises
  
  Repository για τις θεωρητικές ασκήσεις στο μάθημα της Τεχνητής νοημοσύνης ΠΛΗ417
 
